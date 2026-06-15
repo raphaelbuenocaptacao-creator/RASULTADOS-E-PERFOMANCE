@@ -32,7 +32,7 @@
     .title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px} .title h2{font-size:18px;margin:0} .small{color:var(--muted);font-size:12px}
     .upload{max-width:360px} .empty{color:var(--muted);padding:20px;text-align:center} .footer{text-align:center;color:var(--muted);font-size:12px;margin:35px 0 10px}
     .report-actions{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:12px;margin:12px 0}
-    .metric-row{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:12px 0;background:rgba(0,0,0,.16)}
+    .metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:12px 0;background:rgba(0,0,0,.16)}
     .metric-cell{padding:14px;border-right:1px solid var(--line);text-align:center}.metric-cell:last-child{border-right:0}.metric-cell b{font-size:20px;display:block;margin-top:4px}.metric-cell span{font-size:12px;color:var(--muted)}
     .member-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.member-tags span{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#0b1320;color:#dbeafe;font-size:12px}
     th{cursor:pointer;user-select:none} th:hover{color:var(--gold)} .note-box{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);margin-top:10px;line-height:1.55;color:#dbeafe}
@@ -129,7 +129,7 @@
       </div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>🧠 Estratégia: o que funcionou, o que não funcionou e por quê</h2></div><div id="estrategiaPeriodo"></div></div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>🏆 Ranking do período</h2><span class="small">Promotores e pontos de captação</span></div><div id="rankingPeriodo"></div></div>
-      <div class="card" style="margin-top:14px"><div class="title"><h2>📆 Últimas 3 semanas — segunda a domingo</h2><span class="small">Comparativo com casais, vendas, cotas (= vendas), VGV, eficiência e percentual</span></div><div id="ultimasSemanas"></div></div>
+      <div class="card" style="margin-top:14px"><div class="title"><h2>📆 Últimas 3 semanas — segunda a domingo</h2><span class="small">Comparativo com casais, vendas, VGV, eficiência e percentual</span></div><div id="ultimasSemanas"></div></div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>📝 Relatório como gestor</h2><span class="small">Texto automático para copiar e enviar</span></div><div id="relatorioGestor" class="note-box"></div></div>
     </div>
   </section>
@@ -140,8 +140,8 @@
   <section id="liner" class="section"><div class="card"><div class="title"><h2>🧭 Ranking Liner</h2></div><div id="linerTable"></div></div></section>
   <section id="closer" class="section"><div class="card"><div class="title"><h2>🤝 Ranking Closer</h2></div><div id="closerTable"></div></div></section>
 
-  <section id="equipeRaphael" class="section"><div class="card"><div class="title"><h2>👥 Equipe Raphael Bueno</h2><span class="small">Casais, vendas, cotas (= vendas), VGV, eficiência e participação</span></div><div id="teamRaphaelBox"></div></div></section>
-  <section id="equipeFrancisco" class="section"><div class="card"><div class="title"><h2>👥 Equipe Francisco</h2><span class="small">Casais, vendas, cotas (= vendas), VGV, eficiência e participação</span></div><div id="teamFranciscoBox"></div></div></section>
+  <section id="equipeRaphael" class="section"><div class="card"><div class="title"><h2>👥 Equipe Raphael Bueno</h2><span class="small">Casais, vendas, VGV, eficiência e participação</span></div><div id="teamRaphaelBox"></div></div></section>
+  <section id="equipeFrancisco" class="section"><div class="card"><div class="title"><h2>👥 Equipe Francisco</h2><span class="small">Casais, vendas, VGV, eficiência e participação</span></div><div id="teamFranciscoBox"></div></div></section>
 
   <section id="individual" class="section">
     <div class="card">
@@ -263,11 +263,11 @@ function teamSummaryHTML(title, arr, all, teamList, chartId){
   setTimeout(()=>drawBar(chartId, byDate.map(x=>x.nome.split('-').reverse().join('/')), byDate.map(x=>x.vgv), 'VGV por dia'),80);
   const members=teamList.map(x=>`<span>${x.replace('MATEUS SANTOS SANTA ROSA','MATEUS ROSA')}</span>`).join('');
   const cols=teamCols(st);
-  return `<div class="metric-row"><div class="metric-cell"><span>Casais</span><b>${numBR(st.casais)}</b></div><div class="metric-cell"><span>Vendas</span><b>${numBR(st.vendas)}</b></div><div class="metric-cell"><span>Cotas</span><b>${numBR(st.cotas)}</b></div><div class="metric-cell"><span>VGV</span><b>${moneyBR(st.vgv)}</b></div><div class="metric-cell"><span>Eficiência</span><b>${st.eficiencia.toFixed(1)}%</b></div><div class="metric-cell"><span>% VGV Geral</span><b>${pctText(st.vgv,total.vgv)}</b></div></div>
+  return `<div class="metric-row"><div class="metric-cell"><span>Casais</span><b>${numBR(st.casais)}</b></div><div class="metric-cell"><span>Vendas</span><b>${numBR(st.vendas)}</b></div><div class="metric-cell"><span>VGV</span><b>${moneyBR(st.vgv)}</b></div><div class="metric-cell"><span>Eficiência</span><b>${st.eficiencia.toFixed(1)}%</b></div><div class="metric-cell"><span>% VGV Geral</span><b>${pctText(st.vgv,total.vgv)}</b></div></div>
   <div class="two"><div><h3>Membros da equipe</h3><div class="member-tags">${members}</div><div style="margin-top:14px">${table(byProm,cols)}</div></div><div><canvas id="${chartId}"></canvas></div></div>`;
 }
 function teamCols(total){ return [
-  {key:'nome',label:'Profissional',f:v=>`<span class="pill">${v}</span>`}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'}, {key:'cotas',label:'Cotas'},
+  {key:'nome',label:'Profissional',f:v=>`<span class="pill">${v}</span>`}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'},
   {key:'vgv',label:'VGV',f:moneyBR}, {key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},
   {key:'casais',label:'% Casais',f:v=>pctText(v,total.casais)}, {key:'vgv',label:'% VGV',f:v=>pctText(v,total.vgv)}]; }
 function renderTeams(){ const arr=filtered(); document.getElementById('teamRaphaelBox').innerHTML=teamSummaryHTML('Equipe Raphael Bueno', teamRows(arr,TEAM_RAPHAEL), arr, TEAM_RAPHAEL, 'teamRaphaelChart'); document.getElementById('teamFranciscoBox').innerHTML=teamSummaryHTML('Equipe Francisco', teamRows(arr,TEAM_FRANCISCO), arr, TEAM_FRANCISCO, 'teamFranciscoChart'); }
@@ -277,7 +277,7 @@ function renderIndividual(){
   const arr=filtered().filter(r=>r._promotor===name), all=filtered(); const st=stats(arr), total=stats(all), prom=summary(all,r=>r._promotor); const obj=summary(arr,r=>r._promotor)[0]||{nome:name,casais:0,vendas:0,cotas:0,vgv:0,eficiencia:0};
   const byDate=summary(arr,r=>r._iso).sort((a,b)=>a.nome.localeCompare(b.nome)); setTimeout(()=>drawBar('chartIndividual', byDate.map(x=>x.nome.split('-').reverse().join('/')), byDate.map(x=>x.casais), 'Casais por dia'),80);
   const projCasais=Math.round(st.casais/Math.max(1,new Set(arr.map(r=>r._iso)).size)*30)||0, projVgv=st.vgv/Math.max(1,new Set(arr.map(r=>r._iso)).size)*30||0;
-  document.getElementById('individualBox').innerHTML=`<div class="metric-row"><div class="metric-cell"><span>Casais</span><b>${st.casais}</b></div><div class="metric-cell"><span>Vendas</span><b>${st.vendas}</b></div><div class="metric-cell"><span>Cotas</span><b>${st.cotas}</b></div><div class="metric-cell"><span>VGV</span><b>${moneyBR(st.vgv)}</b></div><div class="metric-cell"><span>Eficiência</span><b>${st.eficiencia.toFixed(1)}%</b></div><div class="metric-cell"><span>% do VGV</span><b>${pctText(st.vgv,total.vgv)}</b></div></div>
+  document.getElementById('individualBox').innerHTML=`<div class="metric-row"><div class="metric-cell"><span>Casais</span><b>${st.casais}</b></div><div class="metric-cell"><span>Vendas</span><b>${st.vendas}</b></div><div class="metric-cell"><span>VGV</span><b>${moneyBR(st.vgv)}</b></div><div class="metric-cell"><span>Eficiência</span><b>${st.eficiencia.toFixed(1)}%</b></div><div class="metric-cell"><span>% do VGV</span><b>${pctText(st.vgv,total.vgv)}</b></div></div>
   <div class="grid"><div class="card kpi"><div class="label">Ranking Casais</div><div class="num">${rankingPosition(prom,name,'casais')}º</div></div><div class="card kpi"><div class="label">Ranking Vendas</div><div class="num">${rankingPosition(prom,name,'vendas')}º</div></div><div class="card kpi"><div class="label">Ranking VGV</div><div class="num">${rankingPosition(prom,name,'vgv')}º</div></div><div class="card kpi"><div class="label">Projeção</div><div class="num">${projCasais}</div><div class="mini">${moneyBR(projVgv)}</div></div></div>
   <div class="two"><div class="card"><div class="title"><h2>📈 Evolução individual</h2></div><canvas id="chartIndividual"></canvas></div><div class="card"><div class="title"><h2>📋 Histórico completo</h2></div>${table(arr.slice().sort((a,b)=>a._iso.localeCompare(b._iso)), [{key:'_iso',label:'Data',f:v=>v.split('-').reverse().join('/')},{key:'_local',label:'Local'},{key:'_qual',label:'Q/NQ'},{key:'_vendas',label:'Vendas'},{key:'_valor',label:'VGV',f:moneyBR},{key:'Nome 1',label:'Nome 1'},{key:'Nome 2',label:'Nome 2'}])}</div></div>`;
 }
@@ -285,7 +285,7 @@ function updateIndividualFilter(){ const sel=document.getElementById('individual
 function weeksTable(anchor){
   const weeks=[]; const current=startOfWeekMonday(anchor); for(let i=2;i>=0;i--){const s=addDays(current,-7*i), e=addDays(s,6), arr=rowsBetween(isoDate(s),isoDate(e)), st=stats(arr); weeks.push({semana:`${fmtDate(s)} a ${fmtDate(e)}`,casais:st.casais,vendas:st.vendas,cotas:st.cotas,vgv:st.vgv,eficiencia:st.eficiencia});}
   const total=weeks.reduce((a,b)=>({casais:a.casais+b.casais,vendas:a.vendas+b.vendas,cotas:a.cotas+b.cotas,vgv:a.vgv+b.vgv}),{casais:0,vendas:0,cotas:0,vgv:0});
-  return table(weeks,[{key:'semana',label:'Semana'},{key:'casais',label:'Casais'},{key:'vendas',label:'Vendas'},{key:'cotas',label:'Cotas'},{key:'vgv',label:'VGV',f:moneyBR},{key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},{key:'casais',label:'% Casais',f:v=>pctText(v,total.casais)},{key:'vgv',label:'% VGV',f:v=>pctText(v,total.vgv)}]);
+  return table(weeks,[{key:'semana',label:'Semana'},{key:'casais',label:'Casais'},{key:'vendas',label:'Vendas'},{key:'vgv',label:'VGV',f:moneyBR},{key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},{key:'casais',label:'% Casais',f:v=>pctText(v,total.casais)},{key:'vgv',label:'% VGV',f:v=>pctText(v,total.vgv)}]);
 }
 
 function renderReports(){
@@ -339,12 +339,12 @@ function renderReports(){
   document.getElementById('estrategiaPeriodo').innerHTML=insightList([`🎯 <b>Meta x realizado:</b> ${metaMsg} VGV realizado: ${moneyBR(st.vgv)} (${pctVgv.toFixed(0)}% da meta proporcional).`,`✅ <b>O que funcionou:</b> ${func}`,`❌ <b>O que não funcionou:</b> ${naoFunc}`,`🚀 <b>Estratégia recomendada:</b> ${acao}`,`📌 <b>Expectativa do mês:</b> pelo ritmo atual, fechamento estimado em ${numBR(projCasais)} casais e ${moneyBR(projVgv)}.`]);
   document.getElementById('rankingPeriodo').innerHTML='<h3>Promotores</h3>'+table(byProm.slice(0,15), commonReportCols())+'<h3>Pontos de captação</h3>'+table(byLocal.slice(0,15), commonReportCols());
   document.getElementById('ultimasSemanas').innerHTML=weeksTable(anchor);
-  document.getElementById('relatorioGestor').innerHTML=`<b>Relatório Gerencial do Período</b><br><br>No período de <b>${fmtDate(startDate)} a ${fmtDate(endDate)}</b>, entregamos <b>${st.casais} casais</b>, <b>${st.vendas} vendas</b>, <b>${st.cotas} cotas</b> e <b>${moneyBR(st.vgv)}</b> em VGV, com eficiência de <b>${st.eficiencia.toFixed(1)}%</b>.<br><br><b>Pontos fortes:</b> ${topProm?topProm.nome+' puxou o resultado com '+topProm.casais+' casais e '+moneyBR(topProm.vgv)+'.':'a operação manteve dados para acompanhamento.'} ${topLocal?'O principal ponto foi '+topLocal.nome+'.':''}<br><br><b>Pontos fracos:</b> ${weakProm?'Precisamos corrigir a eficiência de '+weakProm.nome+' e melhorar qualidade de perfil.':'Precisamos manter constância diária e evitar dias sem venda.'}<br><br><b>O que funcionou:</b> volume, acompanhamento diário e foco nos melhores pontos de captação.<br><br><b>O que não funcionou:</b> queda de conversão, NQ alto e dias com VGV baixo ou zerado.<br><br><b>Estratégia:</b> aumentar volume de casais, cobrar perfil certo, acompanhar promotor individualmente e comparar diariamente Equipe Raphael Bueno x Equipe Francisco.<br><br><b>Expectativa:</b> mantendo o ritmo, a projeção é de <b>${numBR(projCasais)} casais</b> e <b>${moneyBR(projVgv)}</b> até o fim do mês. Para bater meta, precisamos acelerar todos os dias.`;
+  document.getElementById('relatorioGestor').innerHTML=`<b>Relatório Gerencial do Período</b><br><br>No período de <b>${fmtDate(startDate)} a ${fmtDate(endDate)}</b>, entregamos <b>${st.casais} casais</b>, <b>${st.vendas} vendas</b> e <b>${moneyBR(st.vgv)}</b> em VGV, com eficiência de <b>${st.eficiencia.toFixed(1)}%</b>.<br><br><b>Pontos fortes:</b> ${topProm?topProm.nome+' puxou o resultado com '+topProm.casais+' casais e '+moneyBR(topProm.vgv)+'.':'a operação manteve dados para acompanhamento.'} ${topLocal?'O principal ponto foi '+topLocal.nome+'.':''}<br><br><b>Pontos fracos:</b> ${weakProm?'Precisamos corrigir a eficiência de '+weakProm.nome+' e melhorar qualidade de perfil.':'Precisamos manter constância diária e evitar dias sem venda.'}<br><br><b>O que funcionou:</b> volume, acompanhamento diário e foco nos melhores pontos de captação.<br><br><b>O que não funcionou:</b> queda de conversão, NQ alto e dias com VGV baixo ou zerado.<br><br><b>Estratégia:</b> aumentar volume de casais, cobrar perfil certo, acompanhar promotor individualmente e comparar diariamente Equipe Raphael Bueno x Equipe Francisco.<br><br><b>Expectativa:</b> mantendo o ritmo, a projeção é de <b>${numBR(projCasais)} casais</b> e <b>${moneyBR(projVgv)}</b> até o fim do mês. Para bater meta, precisamos acelerar todos os dias.`;
 
   drawBar('chartReportDia', byDate.map(x=>x.nome.split('-').reverse().join('/')), byDate.map(x=>x.casais), 'Casais por dia');
   drawBar('chartReportMeta', ['Casais','Vendas','VGV %'], [pctCasais, periodGoalVendas?st.vendas/periodGoalVendas*100:0, pctVgv], '% da meta proporcional');
 }
-function commonReportCols(){return [{key:'nome',label:'Nome',f:v=>`<span class="pill">${v}</span>`},{key:'casais',label:'Casais'},{key:'vendas',label:'Vendas'},{key:'cotas',label:'Cotas'},{key:'vgv',label:'VGV',f:moneyBR},{key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},{key:'q',label:'Q'},{key:'nq',label:'NQ'},{key:'custoCasal',label:'Custo/Casal',f:moneyBR}];}
+function commonReportCols(){return [{key:'nome',label:'Nome',f:v=>`<span class="pill">${v}</span>`},{key:'casais',label:'Casais'},{key:'vendas',label:'Vendas'},{key:'vgv',label:'VGV',f:moneyBR},{key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},{key:'q',label:'Q'},{key:'nq',label:'NQ'},{key:'custoCasal',label:'Custo/Casal',f:moneyBR}];}
 
 function render() {
   const arr=filtered();
@@ -357,7 +357,7 @@ function render() {
   const prom=summary(arr,r=>r._promotor).sort((a,b)=>b.vgv-a.vgv);
   const totals=stats(arr);
   const commonCols=[
-    {key:'nome',label:'Nome',f:v=>`<span class="pill">${v}</span>`}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'}, {key:'cotas',label:'Cotas'},
+    {key:'nome',label:'Nome',f:v=>`<span class="pill">${v}</span>`}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'},
     {key:'vgv',label:'VGV',f:moneyBR}, {key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},
     {key:'casais',label:'% Casais',f:v=>pctText(v,totals.casais)}, {key:'vgv',label:'% VGV',f:v=>pctText(v,totals.vgv)},
     {key:'custo',label:'Brindes',f:moneyBR}, {key:'custoCasal',label:'Custo/Casal',f:moneyBR}
@@ -371,7 +371,7 @@ function render() {
 
   const byDate=summary(arr,r=>r._iso).sort((a,b)=>a.nome.localeCompare(b.nome));
   document.getElementById('calendarTable').innerHTML=table(byDate, [
-    {key:'nome',label:'Data',f:v=>v.split('-').reverse().join('/')}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'}, {key:'cotas',label:'Cotas'}, {key:'vgv',label:'VGV',f:moneyBR}, {key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'}, {key:'custo',label:'Brindes',f:moneyBR}
+    {key:'nome',label:'Data',f:v=>v.split('-').reverse().join('/')}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'}, {key:'vgv',label:'VGV',f:moneyBR}, {key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'}, {key:'custo',label:'Brindes',f:moneyBR}
   ]);
 
   document.getElementById('perfilTable').innerHTML=table(arr.slice().sort((a,b)=>a._iso.localeCompare(b._iso)), [
