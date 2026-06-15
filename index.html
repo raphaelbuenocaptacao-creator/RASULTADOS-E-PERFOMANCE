@@ -129,7 +129,7 @@
       </div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>🧠 Estratégia: o que funcionou, o que não funcionou e por quê</h2></div><div id="estrategiaPeriodo"></div></div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>🏆 Ranking do período</h2><span class="small">Promotores e pontos de captação</span></div><div id="rankingPeriodo"></div></div>
-      <div class="card" style="margin-top:14px"><div class="title"><h2>📆 Últimas 3 semanas — segunda a domingo</h2><span class="small">Comparativo com casais, vendas, cotas, VGV, eficiência e percentual</span></div><div id="ultimasSemanas"></div></div>
+      <div class="card" style="margin-top:14px"><div class="title"><h2>📆 Últimas 3 semanas — segunda a domingo</h2><span class="small">Comparativo com casais, vendas, cotas (= vendas), VGV, eficiência e percentual</span></div><div id="ultimasSemanas"></div></div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>📝 Relatório como gestor</h2><span class="small">Texto automático para copiar e enviar</span></div><div id="relatorioGestor" class="note-box"></div></div>
     </div>
   </section>
@@ -140,8 +140,8 @@
   <section id="liner" class="section"><div class="card"><div class="title"><h2>🧭 Ranking Liner</h2></div><div id="linerTable"></div></div></section>
   <section id="closer" class="section"><div class="card"><div class="title"><h2>🤝 Ranking Closer</h2></div><div id="closerTable"></div></div></section>
 
-  <section id="equipeRaphael" class="section"><div class="card"><div class="title"><h2>👥 Equipe Raphael Bueno</h2><span class="small">Casais, vendas, cotas, VGV, eficiência e participação</span></div><div id="teamRaphaelBox"></div></div></section>
-  <section id="equipeFrancisco" class="section"><div class="card"><div class="title"><h2>👥 Equipe Francisco</h2><span class="small">Casais, vendas, cotas, VGV, eficiência e participação</span></div><div id="teamFranciscoBox"></div></div></section>
+  <section id="equipeRaphael" class="section"><div class="card"><div class="title"><h2>👥 Equipe Raphael Bueno</h2><span class="small">Casais, vendas, cotas (= vendas), VGV, eficiência e participação</span></div><div id="teamRaphaelBox"></div></div></section>
+  <section id="equipeFrancisco" class="section"><div class="card"><div class="title"><h2>👥 Equipe Francisco</h2><span class="small">Casais, vendas, cotas (= vendas), VGV, eficiência e participação</span></div><div id="teamFranciscoBox"></div></div></section>
 
   <section id="individual" class="section">
     <div class="card">
@@ -218,7 +218,7 @@ function groupBy(arr, keyFn) {
 function summary(arr, keyFn) {
   return Object.entries(groupBy(arr,keyFn)).map(([nome,it])=>({
     nome, casais:it.length, vendas:it.reduce((a,b)=>a+b._vendas,0), vgv:it.reduce((a,b)=>a+b._valor,0),
-    cotas:it.reduce((a,b)=>a+b._vendas,0)*2, custo:it.reduce((a,b)=>a+b._custo,0), q:it.filter(x=>x._qual==='Q').length, nq:it.filter(x=>x._qual==='NQ').length
+    cotas:it.reduce((a,b)=>a+b._vendas,0), custo:it.reduce((a,b)=>a+b._custo,0), q:it.filter(x=>x._qual==='Q').length, nq:it.filter(x=>x._qual==='NQ').length
   })).map(x=>({...x, eficiencia:x.casais?x.vendas/x.casais*100:0, custoCasal:x.casais?x.custo/x.casais:0}));
 }
 function table(data, columns) {
@@ -235,7 +235,7 @@ function sortTable(th){
 
 function stats(arr) {
   const casais=arr.length, vendas=arr.reduce((a,b)=>a+b._vendas,0), vgv=arr.reduce((a,b)=>a+b._valor,0), custo=arr.reduce((a,b)=>a+b._custo,0);
-  return {casais,vendas,cotas:vendas*2,vgv,custo,eficiencia:casais? vendas/casais*100:0,custoCasal:casais?custo/casais:0,q:arr.filter(x=>x._qual==='Q').length,nq:arr.filter(x=>x._qual==='NQ').length};
+  return {casais,vendas,cotas:vendas,vgv,custo,eficiencia:casais? vendas/casais*100:0,custoCasal:casais?custo/casais:0,q:arr.filter(x=>x._qual==='Q').length,nq:arr.filter(x=>x._qual==='NQ').length};
 }
 function addDays(d,n){const x=new Date(d); x.setDate(x.getDate()+n); return x;}
 function startOfWeekMonday(d){const x=new Date(d); const day=x.getDay(); const diff=(day===0?-6:1-day); x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x;}
