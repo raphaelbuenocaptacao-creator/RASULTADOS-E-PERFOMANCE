@@ -32,7 +32,7 @@
     .title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px} .title h2{font-size:18px;margin:0} .small{color:var(--muted);font-size:12px}
     .upload{max-width:360px} .empty{color:var(--muted);padding:20px;text-align:center} .footer{text-align:center;color:var(--muted);font-size:12px;margin:35px 0 10px}
     .report-actions{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:12px;margin:12px 0}
-    .metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:12px 0;background:rgba(0,0,0,.16)}
+    .metric-row{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:12px 0;background:rgba(0,0,0,.16)}
     .metric-cell{padding:14px;border-right:1px solid var(--line);text-align:center}.metric-cell:last-child{border-right:0}.metric-cell b{font-size:20px;display:block;margin-top:4px}.metric-cell span{font-size:12px;color:var(--muted)}
     .member-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.member-tags span{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#0b1320;color:#dbeafe;font-size:12px}
     th{cursor:pointer;user-select:none} th:hover{color:var(--gold)} .note-box{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);margin-top:10px;line-height:1.55;color:#dbeafe}
@@ -65,6 +65,7 @@
   <div class="tabs">
     <div class="tab active" onclick="openTab('geral',this)">Geral</div>
     <div class="tab" onclick="openTab('relatorios',this)">📊 Relatórios</div>
+    <div class="tab" onclick="openTab('comparativo',this)">📈 Comparativo</div>
     <div class="tab" onclick="openTab('ranking',this)">Rankings</div>
     <div class="tab" onclick="openTab('calendario',this)">Calendário</div>
     <div class="tab" onclick="openTab('promotores',this)">Promotores Marketing</div>
@@ -131,6 +132,30 @@
       <div class="card" style="margin-top:14px"><div class="title"><h2>🏆 Ranking do período</h2><span class="small">Promotores e pontos de captação</span></div><div id="rankingPeriodo"></div></div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>📆 Últimas 3 semanas — segunda a domingo</h2><span class="small">Comparativo com casais, vendas, VGV, eficiência e percentual</span></div><div id="ultimasSemanas"></div></div>
       <div class="card" style="margin-top:14px"><div class="title"><h2>📝 Relatório como gestor</h2><span class="small">Texto automático para copiar e enviar</span></div><div id="relatorioGestor" class="note-box"></div></div>
+    </div>
+  </section>
+
+  <section id="comparativo" class="section">
+    <div class="card">
+      <div class="title"><h2>📈 Comparativo entre Períodos</h2><span class="small">Escolha duas datas para comparar resultados e percentual de evolução</span></div>
+      <div class="report-actions">
+        <input type="date" id="compStartA">
+        <input type="date" id="compEndA">
+        <input type="date" id="compStartB">
+        <input type="date" id="compEndB">
+        <button onclick="setCompareWeeks()">Comparar semanas</button>
+        <button onclick="renderComparativo()">Atualizar comparativo</button>
+      </div>
+      <div class="two">
+        <div class="card"><div class="title"><h2>Período de cima</h2><span class="small" id="compLabelA">-</span></div><div id="compResumoA"></div></div>
+        <div class="card"><div class="title"><h2>Período de baixo</h2><span class="small" id="compLabelB">-</span></div><div id="compResumoB"></div></div>
+      </div>
+      <div class="card" style="margin-top:14px"><div class="title"><h2>📊 Percentual de melhora ou queda</h2><span class="small">Comparação do período de baixo contra o período de cima</span></div><div id="compPercentuais"></div></div>
+      <div class="two">
+        <div class="card"><div class="title"><h2>Gráfico comparativo — Casais e Vendas</h2></div><canvas id="chartCompareBars"></canvas></div>
+        <div class="card"><div class="title"><h2>Gráfico comparativo — VGV e Eficiência</h2></div><canvas id="chartComparePct"></canvas></div>
+      </div>
+      <div class="card" style="margin-top:14px"><div class="title"><h2>📋 Leitura gerencial automática</h2></div><div id="compAnalise" class="note-box"></div></div>
     </div>
   </section>
 
@@ -267,8 +292,7 @@ function teamSummaryHTML(title, arr, all, teamList, chartId){
   <div class="two"><div><h3>Membros da equipe</h3><div class="member-tags">${members}</div><div style="margin-top:14px">${table(byProm,cols)}</div></div><div><canvas id="${chartId}"></canvas></div></div>`;
 }
 function teamCols(total){ return [
-  {key:'nome',label:'Profissional',f:v=>`<span class="pill">${v}</span>`}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'},
-  {key:'vgv',label:'VGV',f:moneyBR}, {key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},
+  {key:'nome',label:'Profissional',f:v=>`<span class="pill">${v}</span>`}, {key:'casais',label:'Casais'}, {key:'vendas',label:'Vendas'}, {key:'vgv',label:'VGV',f:moneyBR}, {key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},
   {key:'casais',label:'% Casais',f:v=>pctText(v,total.casais)}, {key:'vgv',label:'% VGV',f:v=>pctText(v,total.vgv)}]; }
 function renderTeams(){ const arr=filtered(); document.getElementById('teamRaphaelBox').innerHTML=teamSummaryHTML('Equipe Raphael Bueno', teamRows(arr,TEAM_RAPHAEL), arr, TEAM_RAPHAEL, 'teamRaphaelChart'); document.getElementById('teamFranciscoBox').innerHTML=teamSummaryHTML('Equipe Francisco', teamRows(arr,TEAM_FRANCISCO), arr, TEAM_FRANCISCO, 'teamFranciscoChart'); }
 function rankingPosition(list, name, metric){ const sorted=list.slice().sort((a,b)=>b[metric]-a[metric]); return sorted.findIndex(x=>x.nome===name)+1; }
@@ -283,9 +307,41 @@ function renderIndividual(){
 }
 function updateIndividualFilter(){ const sel=document.getElementById('individualFilter'); if(!sel) return; const cur=sel.value; const ps=[...new Set(rows.map(r=>r._promotor).filter(Boolean))].sort(); sel.innerHTML='<option value="">Selecione um profissional</option>'+ps.map(x=>`<option value="${x}">${x}</option>`).join(''); if(ps.includes(cur)) sel.value=cur; }
 function weeksTable(anchor){
-  const weeks=[]; const current=startOfWeekMonday(anchor); for(let i=2;i>=0;i--){const s=addDays(current,-7*i), e=addDays(s,6), arr=rowsBetween(isoDate(s),isoDate(e)), st=stats(arr); weeks.push({semana:`${fmtDate(s)} a ${fmtDate(e)}`,casais:st.casais,vendas:st.vendas,cotas:st.cotas,vgv:st.vgv,eficiencia:st.eficiencia});}
-  const total=weeks.reduce((a,b)=>({casais:a.casais+b.casais,vendas:a.vendas+b.vendas,cotas:a.cotas+b.cotas,vgv:a.vgv+b.vgv}),{casais:0,vendas:0,cotas:0,vgv:0});
+  const weeks=[]; const current=startOfWeekMonday(anchor); for(let i=2;i>=0;i--){const s=addDays(current,-7*i), e=addDays(s,6), arr=rowsBetween(isoDate(s),isoDate(e)), st=stats(arr); weeks.push({semana:`${fmtDate(s)} a ${fmtDate(e)}`,casais:st.casais,vendas:st.vendas,vgv:st.vgv,eficiencia:st.eficiencia});}
+  const total=weeks.reduce((a,b)=>({casais:a.casais+b.casais,vendas:a.vendas+b.vendas,vgv:a.vgv+b.vgv}),{casais:0,vendas:0,vgv:0});
   return table(weeks,[{key:'semana',label:'Semana'},{key:'casais',label:'Casais'},{key:'vendas',label:'Vendas'},{key:'vgv',label:'VGV',f:moneyBR},{key:'eficiencia',label:'Eficiência',f:v=>v.toFixed(1)+'%'},{key:'casais',label:'% Casais',f:v=>pctText(v,total.casais)},{key:'vgv',label:'% VGV',f:v=>pctText(v,total.vgv)}]);
+}
+function metricVariation(a,b){ if(a===0 && b===0) return 0; if(a===0 && b>0) return 100; return ((b-a)/a)*100; }
+function variationHTML(label,a,b,format){
+  const v=metricVariation(a,b); const cls=v>=0?'ok':'bad'; const icon=v>=0?'▲':'▼';
+  return `<div class="metric-cell"><span>${label}</span><b class="${cls}">${icon} ${Math.abs(v).toFixed(1)}%</b><span>${format(a)} → ${format(b)}</span></div>`;
+}
+function compareCardHTML(st,total){
+  return `<div class="metric-row"><div class="metric-cell"><span>Casais</span><b>${numBR(st.casais)}</b><span>${pctText(st.casais,total.casais)} do comparativo</span></div><div class="metric-cell"><span>Vendas</span><b>${numBR(st.vendas)}</b><span>${pctText(st.vendas,total.vendas)} do comparativo</span></div><div class="metric-cell"><span>VGV</span><b>${moneyBR(st.vgv)}</b><span>${pctText(st.vgv,total.vgv)} do comparativo</span></div><div class="metric-cell"><span>Eficiência</span><b>${st.eficiencia.toFixed(1)}%</b><span>Vendas ÷ casais</span></div></div>`;
+}
+function setCompareWeeks(){
+  const a=getAnchorDate(), current=startOfWeekMonday(a), sA=addDays(current,-14), eA=addDays(sA,6), sB=addDays(current,-7), eB=addDays(sB,6);
+  document.getElementById('compStartA').value=isoDate(sA); document.getElementById('compEndA').value=isoDate(eA);
+  document.getElementById('compStartB').value=isoDate(sB); document.getElementById('compEndB').value=isoDate(eB);
+  renderComparativo();
+}
+function renderComparativo(){
+  const csA=document.getElementById('compStartA'), ceA=document.getElementById('compEndA'), csB=document.getElementById('compStartB'), ceB=document.getElementById('compEndB');
+  if(!csA||!ceA||!csB||!ceB) return;
+  if(!csA.value || !ceA.value || !csB.value || !ceB.value){ setCompareWeeks(); return; }
+  const arrA=rowsBetween(csA.value,ceA.value), arrB=rowsBetween(csB.value,ceB.value), stA=stats(arrA), stB=stats(arrB);
+  const total={casais:stA.casais+stB.casais,vendas:stA.vendas+stB.vendas,vgv:stA.vgv+stB.vgv};
+  document.getElementById('compLabelA').textContent=`${fmtDate(new Date(csA.value+'T00:00:00'))} a ${fmtDate(new Date(ceA.value+'T00:00:00'))}`;
+  document.getElementById('compLabelB').textContent=`${fmtDate(new Date(csB.value+'T00:00:00'))} a ${fmtDate(new Date(ceB.value+'T00:00:00'))}`;
+  document.getElementById('compResumoA').innerHTML=compareCardHTML(stA,total);
+  document.getElementById('compResumoB').innerHTML=compareCardHTML(stB,total);
+  document.getElementById('compPercentuais').innerHTML=`<div class="metric-row">${variationHTML('Casais',stA.casais,stB.casais,numBR)}${variationHTML('Vendas',stA.vendas,stB.vendas,numBR)}${variationHTML('VGV',stA.vgv,stB.vgv,moneyBR)}${variationHTML('Eficiência',stA.eficiencia,stB.eficiencia,v=>v.toFixed(1)+'%')}</div>`;
+  const labels=['Período de cima','Período de baixo'];
+  drawGroupedBar('chartCompareBars', labels, [{label:'Casais',data:[stA.casais,stB.casais]},{label:'Vendas',data:[stA.vendas,stB.vendas]}]);
+  drawGroupedBar('chartComparePct', labels, [{label:'VGV',data:[stA.vgv,stB.vgv]},{label:'Eficiência %',data:[stA.eficiencia,stB.eficiencia]}]);
+  const vCasais=metricVariation(stA.casais,stB.casais), vVendas=metricVariation(stA.vendas,stB.vendas), vVgv=metricVariation(stA.vgv,stB.vgv), vEfic=metricVariation(stA.eficiencia,stB.eficiencia);
+  const status=(vCasais>=0&&vVendas>=0&&vVgv>=0)?'evolução positiva':'ponto de atenção';
+  document.getElementById('compAnalise').innerHTML=`Comparando o período de baixo contra o período de cima, tivemos <b>${vCasais>=0?'crescimento':'queda'} de ${Math.abs(vCasais).toFixed(1)}% em casais</b>, <b>${vVendas>=0?'crescimento':'queda'} de ${Math.abs(vVendas).toFixed(1)}% em vendas</b>, <b>${vVgv>=0?'crescimento':'queda'} de ${Math.abs(vVgv).toFixed(1)}% em VGV</b> e <b>${vEfic>=0?'crescimento':'queda'} de ${Math.abs(vEfic).toFixed(1)}% em eficiência</b>. Resultado geral: <b>${status}</b>.`;
 }
 
 function renderReports(){
@@ -386,11 +442,16 @@ function render() {
   const qn=[arr.filter(x=>x._qual==='Q').length, arr.filter(x=>x._qual==='NQ').length];
   drawDoughnut('chartQual', ['Q','NQ'], qn);
   renderTeams(); renderIndividual();
-  renderReports();
+  renderReports(); renderComparativo();
 }
 function drawBar(id, labels, values, label) {
   if(charts[id]) charts[id].destroy();
   charts[id]=new Chart(document.getElementById(id), {type:'bar', data:{labels, datasets:[{label, data:values, borderWidth:1}]}, options:{responsive:true, plugins:{legend:{labels:{color:'#fff'}}}, scales:{x:{ticks:{color:'#98a2b3'}}, y:{ticks:{color:'#98a2b3'}}}}});
+}
+function drawGroupedBar(id, labels, datasets) {
+  const el=document.getElementById(id); if(!el) return;
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(el, {type:'bar', data:{labels, datasets:datasets.map(d=>({label:d.label,data:d.data,borderWidth:1}))}, options:{responsive:true, plugins:{legend:{labels:{color:'#fff'}}}, scales:{x:{ticks:{color:'#98a2b3'}}, y:{ticks:{color:'#98a2b3'}}}}});
 }
 function drawDoughnut(id, labels, values) {
   if(charts[id]) charts[id].destroy();
@@ -409,6 +470,7 @@ function resetFilters() { document.getElementById('promotorFilter').value=''; do
 function openTab(id, el) { document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); const sec=document.getElementById(id); if(sec) sec.classList.add('active'); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); setTimeout(render,80); }
 ['dateStart','dateEnd','promotorFilter','localFilter','qualFilter'].forEach(id=>document.getElementById(id).addEventListener('change',render));
 ['reportStart','reportEnd','goalCasais','goalVendas','goalVgv'].forEach(id=>document.getElementById(id).addEventListener('change',renderReports));
+['compStartA','compEndA','compStartB','compEndB'].forEach(id=>document.getElementById(id).addEventListener('change',renderComparativo));
 
 document.getElementById('csvFile').addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
