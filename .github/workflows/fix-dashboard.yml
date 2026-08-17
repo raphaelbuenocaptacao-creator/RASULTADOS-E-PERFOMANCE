@@ -1,0 +1,33 @@
+name: Fix Dashboard UI
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix dashboard and make PWA install button prominent
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("renderAnalises(rows,sales,vgv)","renderAnalises(a,sales,vgv)")
+          s=s.replace("$('analysisView').innerHTML", "$('strength').innerHTML")
+          s=s.replace("$('observations').innerHTML", "$('obs').innerHTML")
+          s=s.replace("<button class=\"btn install\" id=\"installBtn\" hidden>📲 Instalar aplicativo</button>","<button class=\"btn install\" id=\"installBtn\">📲 INSTALAR APLICATIVO</button>")
+          s=s.replace(".btn.install{background:#f5c542;color:#17130a;font-weight:900}",".btn.install{background:#f5c542;color:#17130a;font-weight:950;font-size:15px;padding:12px 20px;box-shadow:0 5px 20px #f5c54233}")
+          s=s.replace("$('<span class=\"error\">", "$(<span class=\"error\">") if False else s
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit fixes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'fix: dashboard data execution and prominent PWA install button'
+          git push
