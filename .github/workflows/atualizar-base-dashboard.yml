@@ -1,0 +1,27 @@
+name: Atualizar base do dashboard
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trocar base CSV do dashboard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('resultados-3-meses.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace("fetch('dados.csv?'+Date.now())", "fetch('Document1111.csv?'+Date.now())")
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit da alteração
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add resultados-3-meses.html
+          git diff --cached --quiet || git commit -m 'chore: usar Document1111.csv como base do dashboard'
+          git push
