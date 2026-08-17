@@ -1,0 +1,120 @@
+name: Atualizar Capitão da Semana
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-capitao-semana.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inserir Capitão da Semana
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          marker_html = '<!-- CAPITAO_SEMANA -->'
+          if marker_html not in s:
+              anchor = '<section id="ranking" class="section">'
+              card = '''<!-- CAPITAO_SEMANA -->
+          <section id="capitao" class="section">
+            <div class="card panel">
+              <div class="head">
+                <div>
+                  <h2 class="title">👑 Capitão / Capitã da Semana</h2>
+                  <span class="hint" id="capitaoPeriodo">Segunda a domingo</span>
+                </div>
+                <span class="badgeSemana">🏆 Maior número de casais</span>
+              </div>
+              <div id="capitaoView"></div>
+            </div>
+            <div class="card panel" style="margin-top:11px">
+              <div class="head"><h2 class="title">📊 Ranking da semana</h2><span class="hint">Critério: casais atendidos</span></div>
+              <div id="capitaoRanking" class="tablewrap"></div>
+            </div>
+          </section>
+          '''
+              s = s.replace(anchor, card + anchor, 1)
+              s = s.replace('<button class="tab" data-tab="ranking">🏆 Ranking</button>', '<button class="tab" data-tab="ranking">🏆 Ranking</button><button class="tab" data-tab="capitao">👑 Capitão da Semana</button>', 1)
+
+          marker_css = '/* CAPITAO_CSS */'
+          if marker_css not in s:
+              css = '''/* CAPITAO_CSS */
+          .badgeSemana{display:inline-flex;padding:7px 10px;border-radius:999px;background:#111c2b;border:1px solid #34445c;color:#ffe38a;font-size:9px;font-weight:900}
+          .capitaoHero{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+          .capitaoWinner{padding:22px;border:1px solid #5b4a18;border-radius:16px;background:radial-gradient(500px 200px at 0 0,#2a2410,transparent 70%),#0d131d}
+          .capitaoCrown{font-size:34px}.capitaoName{font-size:25px;font-weight:950;margin-top:8px}.capitaoCount{font-size:15px;color:#ffe38a;margin-top:5px;font-weight:900}
+          @media(max-width:650px){.capitaoHero{grid-template-columns:1fr}.badgeSemana{margin-top:8px}}
+          '''
+              s = s.replace('</style>', css + '</style>', 1)
+
+          marker_js = '// CAPITAO_JS'
+          if marker_js not in s:
+              js = '''// CAPITAO_JS
+          function semanaAtual(){
+            const hoje=new Date();
+            const d=new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate());
+            const dia=d.getDay();
+            const diff=(dia===0?-6:1-dia);
+            const inicio=new Date(d); inicio.setDate(d.getDate()+diff);
+            const fim=new Date(inicio); fim.setDate(inicio.getDate()+6);
+            return {inicio,fim};
+          }
+          function semanaComDados(){
+            const atual=semanaAtual();
+            const tem=DATA.some(r=>r.DATA>=atual.inicio && r.DATA<=atual.fim);
+            if(tem) return atual;
+            if(!DATA.length) return atual;
+            const ultima=new Date(Math.max(...DATA.map(r=>r.DATA.getTime())));
+            const dia=ultima.getDay();
+            const diff=(dia===0?-6:1-dia);
+            const inicio=new Date(ultima); inicio.setDate(ultima.getDate()+diff); inicio.setHours(0,0,0,0);
+            const fim=new Date(inicio); fim.setDate(inicio.getDate()+6); fim.setHours(23,59,59,999);
+            return {inicio,fim};
+          }
+          function renderCapitao(){
+            const {inicio,fim}=semanaComDados();
+            const wr=DATA.filter(r=>r.DATA>=inicio&&r.DATA<=fim);
+            const g=group(wr,'PROMOTOR').map((x,i)=>({rank:i+1,name:x[0],casais:x[1]}));
+            const ini=inicio.toLocaleDateString('pt-BR'), end=fim.toLocaleDateString('pt-BR');
+            $('capitaoPeriodo').textContent=`${ini} a ${end} • segunda a domingo`;
+            if(!g.length){$('capitaoView').innerHTML='<div class="empty">Ainda não há casais registrados nesta semana.</div>'; $('capitaoRanking').innerHTML=''; return;}
+            const w=g[0];
+            $('capitaoView').innerHTML=`<div class="capitaoHero"><div class="capitaoWinner"><div class="capitaoCrown">👑</div><div class="capitaoName">${w.name}</div><div class="capitaoCount">${w.casais.toLocaleString('pt-BR')} casais na semana</div><div class="hint" style="margin-top:8px">Campeão pelo maior número de casais • ${ini} → ${end}</div></div><div class="note"><b>Regra oficial</b><br><br>O Capitão ou Capitã da Semana é quem colocar <b>mais casais</b> no período de <b>segunda-feira a domingo</b>.<br><br>Raphael e Francisco permanecem excluídos.</div></div>`;
+            $('capitaoRanking').innerHTML=table(g,[['#','rank'],['Promotor',r=>'<span class="pill">'+r.name+'</span>'],['Casais',r=>r.casais.toLocaleString('pt-BR')]]);
+          }
+          '''
+              # call after render() is defined and before setup()
+              s = s.replace('function setup(){', js + '\nfunction setup(){', 1)
+              s = s.replace("$('clear').onclick=()=>{", "$('clear').onclick=()=>{", 1)
+              # ensure captain is refreshed on every dashboard render
+              s = s.replace("function render(){", "function render(){", 1)
+              # inject call immediately before render closes via stable setup call
+              s = s.replace("$('giftView').innerHTML=table(gifts.slice(0,300),[['Data'", "renderCapitao();\nlet gifts=rows.filter(r=>String(r['BRINDES EFETIVOS']||'').trim());$('giftView').innerHTML=table(gifts.slice(0,300),[['Data'", 1)
+
+          p.write_text(s, encoding='utf-8')
+      - name: Validar HTML
+        run: |
+          test -s index.html
+          grep -q 'capitaoView' index.html
+          grep -q 'semanaAtual' index.html
+
+      - name: Commitar alteração
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Adicionar Capitão da Semana segunda a domingo'
+          git push
