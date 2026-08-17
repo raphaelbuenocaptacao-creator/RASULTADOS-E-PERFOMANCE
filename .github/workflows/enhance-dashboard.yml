@@ -1,0 +1,48 @@
+name: Enhance Dashboard
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.github/workflows/enhance-dashboard.yml'
+jobs:
+  enhance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add PWA and analysis features
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          changed=False
+          if 'rel="manifest"' not in s:
+              s=s.replace('</head>','<link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#f5c542"><style>.installPwa{border:1px solid #5b4a18;background:linear-gradient(135deg,#ffe38a,#f5c542);color:#17130a;border-radius:11px;padding:9px 13px;font-weight:900;cursor:pointer;margin-left:10px}.analysisGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.analysisCard{padding:18px;border:1px solid #253044;border-radius:15px;background:#0c121b}.analysisCard h3{margin:0 0 8px;font-size:14px}.analysisCard p,.analysisCard li{font-size:12px;line-height:1.6;color:#b7c0ce}.analysisStrong{border-left:4px solid #39df8d}.analysisWeak{border-left:4px solid #ff6875}.analysisObs{border-left:4px solid #f5c542}.analysisPulse{border-left:4px solid #68a0ff}@media(max-width:650px){.analysisGrid{grid-template-columns:1fr}.installPwa{margin:8px 0 0}}</style></head>')
+              changed=True
+          if 'id="installPwa"' not in s:
+              s=s.replace('</div></header>','</div><button id="installPwa" class="installPwa" hidden>📲 Instalar aplicativo</button></div></header>',1)
+              changed=True
+          if 'data-tab="analises"' not in s:
+              s=s.replace('<button class="tab" data-tab="brindes">🎁 Brindes</button>','<button class="tab" data-tab="brindes">🎁 Brindes</button><button class="tab" data-tab="analises">🧠 Análises</button>')
+              s=s.replace('</section>\n<div class="footer">','</section>\n<section id="analises" class="section"><div class="card panel"><div class="head"><h2 class="title">🧠 Análise de Performance</h2><span class="hint">Pontos fortes • pontos fracos • observações • pulsadores</span></div><div id="analysisView" class="analysisGrid"></div><div class="analysisCard analysisObs" style="margin-top:12px"><h3>👀 Observações de resultados</h3><div id="observations"></div></div><div class="analysisCard analysisPulse" style="margin-top:12px"><h3>⚡ Pulsadores</h3><div id="pulsadores"></div></div></div></section>\n<div class="footer">')
+              changed=True
+          if 'function renderAnalises' not in s:
+              marker='function render(){'
+              fn="""function weekBounds(){let now=new Date(),d=now.getDay(),start=new Date(now);start.setDate(now.getDate()-(d===0?6:d-1));start.setHours(0,0,0,0);let end=new Date(start);end.setDate(start.getDate()+6);end.setHours(23,59,59,999);return [start,end]}\nfunction renderAnalises(rows,sales,vgv){let by=group(rows,'PROMOTOR'),best=by[0],worst=by[by.length-1],rank=by.map(x=>({n:x[0],c:x[1],s:sales.filter(r=>r.PROMOTOR===x[0]).length}));let eff=rank.filter(x=>x.c>0).sort((a,b)=>b.s/b.c-a.s/a.c)[0];let [ws,we]=weekBounds(),wr=DATA.filter(r=>r.DATA>=ws&&r.DATA<=we),wg=group(wr,'PROMOTOR'),cap=wg[0];$('analysisView').innerHTML=`<div class=\\"analysisCard analysisStrong\\"><h3>💪 Ponto forte</h3><p>${best?`Maior volume: <b>${best[0]}</b> com <b>${best[1]}</b> casais.`:'Sem dados.'}</p></div><div class=\\"analysisCard analysisWeak\\"><h3>⚠️ Ponto fraco</h3><p>${worst?`Menor volume entre os promotores ativos: <b>${worst[0]}</b> com <b>${worst[1]}</b> casais. Avaliar contexto, presença e oportunidade.`:'Sem dados.'}</p></div><div class=\\"analysisCard analysisObs\\"><h3>📈 Melhor eficiência</h3><p>${eff?`<b>${eff.n}</b> converteu <b>${(eff.s/eff.c*100).toFixed(1)}%</b> (${eff.s} vendas / ${eff.c} casais).`:'Sem dados.'}</p></div><div class=\\"analysisCard analysisPulse\\"><h3>👑 Capitão/Capita da semana</h3><p>${cap?`<b>${cap[0]}</b> lidera com <b>${cap[1]} casais</b>. Semana: ${iso(ws)} a ${iso(we)}.`:'Sem dados na semana atual.'}</p></div>`;$('observations').innerHTML=`<p>Período filtrado: <b>${rows.length}</b> casais, <b>${sales.length}</b> vendas e <b>${money(vgv)}</b> VGV. A leitura muda automaticamente com os filtros.</p>`;$('pulsadores').innerHTML=`<ul><li>🔥 Volume: <b>${best?best[0]:'—'}</b>.</li><li>🎯 Eficiência: <b>${eff?eff.n:'—'}</b>.</li><li>🚨 Atenção: <b>${worst?worst[0]:'—'}</b>.</li><li>👑 Semana: <b>${cap?cap[0]:'—'}</b>.</li></ul>`}\n"""
+              s=s.replace(marker,fn+marker,1)
+              s=s.replace("$('hero').textContent=", "renderAnalises(rows,sales,vgv);$('hero').textContent=",1)
+              changed=True
+          if 'navigator.serviceWorker.register' not in s:
+              s=s.replace('</script>','let deferredInstall=null;window.addEventListener(\'beforeinstallprompt\',e=>{e.preventDefault();deferredInstall=e;let b=$(\'installPwa\');if(b)b.hidden=false});document.addEventListener(\'click\',e=>{if(e.target&&e.target.id===\'installPwa\'&&deferredInstall){deferredInstall.prompt();deferredInstall=null}});if(\'serviceWorker\' in navigator)navigator.serviceWorker.register(\'./sw.js\').catch(()=>{});\n</script>',1)
+              changed=True
+          if changed:
+              p.write_text(s,encoding='utf-8')
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Adiciona PWA, analises e pulsadores ao dashboard'
+          git push
