@@ -1,0 +1,12 @@
+{
+  "name": "Dashboard Comercial de Captação",
+  "short_name": "Bueno Dashboard",
+  "description": "Performance, VGV, casais, vendas, ranking e análises comerciais.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070a10",
+  "theme_color": "#f5c542",
+  "lang": "pt-BR",
+  "icons": []
+}
