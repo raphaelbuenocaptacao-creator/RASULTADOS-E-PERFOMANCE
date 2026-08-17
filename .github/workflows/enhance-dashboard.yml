@@ -1,21 +1,50 @@
-name: Enhance Dashboard
+name: Fix and Consolidate Dashboard
 on:
-  workflow_dispatch:
   push:
     branches: [main]
-    paths-ignore:
-      - '.github/workflows/enhance-dashboard.yml'
+  workflow_dispatch:
 jobs:
-  enhance:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Validate dashboard source
+      - name: Fix dashboard JavaScript and add August/Captain views
+        shell: python
         run: |
-          test -s index.html
-          test -s Document1111.csv
-          echo "Dashboard source and CSV are present."
-      - name: No automatic rewrite
-        run: echo "Manual consolidated dashboard is authoritative; no file rewriting performed."
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          # Remove the broken legacy function that referenced undefined rows/group/analysis nodes.
+          s=re.sub(r'function renderAnalises\(.*?\nfunction render\(\)', 'function render(){', s, flags=re.S)
+          # Fix the render call if an older copy remains.
+          s=s.replace("renderAnalises(a,sales,vgv);", "")
+          # Add a dedicated August tab and section once.
+          if 'data-tab="agosto"' not in s:
+              s=s.replace('<button class="tab" data-tab="ranking">🏆 Ranking</button>', '<button class="tab" data-tab="ranking">🏆 Ranking</button><button class="tab" data-tab="agosto">🔥 Agosto</button>')
+              s=s.replace('<section id="capitao"', '<section id="agosto" class="section"><div class="card"><h2>🔥 Ranking de Agosto</h2><div class="muted">01/08/2026 a 17/08/2026</div><div id="aug"></div></div></section><section id="capitao"')
+          # Add a safe August renderer before render().
+          if 'function renderAugust()' not in s:
+              fn="""function renderAugust(){const a=DATA.filter(r=>iso(r.DATA)>='2026-08-01'&&iso(r.DATA)<='2026-08-17');const sales=a.filter(r=>r.VGV>0);const rank=grp(a,'PROMOTOR','vgv').map((x,i)=>({pos:i+1,name:x[0],casais:a.filter(r=>r.PROMOTOR===x[0]).length,vendas:sales.filter(r=>r.PROMOTOR===x[0]).length,vgv:x[1]}));const el=document.getElementById('aug');if(el)el.innerHTML=table(rank,[['#','pos'],['Promotor','name'],['Casais','casais'],['Vendas','vendas'],['VGV',r=>money(r.vgv)],['Eficiência',r=>(r.casais?r.vendas/r.casais*100:0).toFixed(1)+'%']]);}\n"""
+              s=s.replace('function render(){',fn+'function render(){',1)
+          # Ensure August is refreshed whenever the dashboard renders.
+          s=s.replace('renderWeek();renderAudit();', 'renderAugust();renderWeek();renderAudit();')
+          # Replace broken/legacy group references in the existing analysis function if present.
+          s=s.replace("let by=group(rows,'PROMOTOR')", "let by=grp(a,'PROMOTOR')")
+          s=s.replace("group(wr,'PROMOTOR')", "grp(wr,'PROMOTOR')")
+          p.write_text(s,encoding='utf-8')
+      - name: Validate
+        run: |
+          grep -q 'function renderAugust' index.html
+          grep -q 'data-tab="agosto"' index.html
+          grep -q 'renderAugust();' index.html
+      - name: Commit consolidated dashboard
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Corrige dashboard e adiciona ranking de agosto [skip ci]'
+          git push
