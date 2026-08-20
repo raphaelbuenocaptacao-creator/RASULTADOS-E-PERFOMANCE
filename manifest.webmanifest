@@ -1,12 +1,12 @@
 {
-  "name": "Dashboard Comercial de Captação",
-  "short_name": "Bueno Dashboard",
-  "description": "Performance, VGV, casais, vendas, ranking e análises comerciais.",
+  "name": "VT Hub — Dashboard Trimestral",
+  "short_name": "VT Hub",
+  "description": "Resultados trimestrais de captação, custos, brindes e performance profissional.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#070a10",
-  "theme_color": "#f5c542",
+  "background_color": "#050b14",
+  "theme_color": "#07111f",
   "lang": "pt-BR",
   "icons": []
 }
