@@ -1,5 +1,5 @@
-const CACHE='vt-hub-trimestral-v7-safe-shell';
-const APP_SHELL=['./','./index.html','./dashboard-data.json','./manifest.webmanifest','./icon-192.svg','./icon-512.svg','./icon-512-maskable.svg'];
+const CACHE='vt-hub-trimestral-v8-safe-shell';
+const APP_SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.svg','./icon-512.svg','./icon-512-maskable.svg'];
 const APP_SHELL_PATHS=new Set(APP_SHELL.map(path=>new URL(path,self.registration.scope).pathname));
 
 self.addEventListener('install',event=>{
@@ -37,9 +37,7 @@ self.addEventListener('fetch',event=>{
   if(isPrivateRequest(request,url)) return;
 
   if(request.mode==='navigate'){
-    event.respondWith(
-      fetch(request).catch(()=>caches.match('./index.html'))
-    );
+    event.respondWith(fetch(request).catch(()=>caches.match('./index.html')));
     return;
   }
 
