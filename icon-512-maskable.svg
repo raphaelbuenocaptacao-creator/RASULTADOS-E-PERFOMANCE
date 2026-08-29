@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="VT Hub">
+  <rect width="512" height="512" rx="96" fill="#07111f"/>
+  <circle cx="256" cy="256" r="168" fill="#2f81f7"/>
+  <path d="M150 158h58l48 126 48-126h58L282 354h-52z" fill="#ffffff"/>
+</svg>
