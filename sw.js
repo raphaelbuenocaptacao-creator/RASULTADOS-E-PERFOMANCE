@@ -1,8 +1,16 @@
 const CACHE_PREFIX='vt-hub-trimestral-';
-const CACHE=`${CACHE_PREFIX}v12-safe-shell`;
+const CACHE=`${CACHE_PREFIX}v13-private-vary-safe-shell`;
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.svg','./icon-512.svg','./icon-512-maskable.svg'];
 const APP_SHELL_PATHS=new Set(APP_SHELL.map(path=>new URL(path,self.registration.scope).pathname));
 const SENSITIVE_QUERY_RE=/^(token|access_token|refresh_token|password|passwd|secret|session|auth|authorization|key|apikey|api_key|code|credential|credentials)$/i;
+
+function variesPrivate(response){
+  const vary=(response.headers.get('vary')||'').toLowerCase();
+  return vary.split(',').some(value=>{
+    const key=value.trim();
+    return key==='cookie'||key==='authorization';
+  });
+}
 
 function isCacheableResponse(response){
   if(!response || response.status!==200 || response.type!=='basic') return false;
@@ -11,6 +19,7 @@ function isCacheableResponse(response){
   const cacheControl=response.headers.get('cache-control')||'';
   if(/(?:^|,)\s*(?:private|no-store)(?:\s|,|$)/i.test(cacheControl)) return false;
   if(response.headers.has('set-cookie')) return false;
+  if(variesPrivate(response)) return false;
   return true;
 }
 
