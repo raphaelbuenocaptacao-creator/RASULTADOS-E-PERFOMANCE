@@ -1,6 +1,6 @@
 const CACHE_PREFIX='vt-hub-trimestral-';
-const CACHE=`${CACHE_PREFIX}v13-private-vary-safe-shell`;
-const APP_SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.svg','./icon-512.svg','./icon-512-maskable.svg'];
+const CACHE=`${CACHE_PREFIX}v14-private-vary-star-safe-shell`;
+const APP_SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png'];
 const APP_SHELL_PATHS=new Set(APP_SHELL.map(path=>new URL(path,self.registration.scope).pathname));
 const SENSITIVE_QUERY_RE=/^(token|access_token|refresh_token|password|passwd|secret|session|auth|authorization|key|apikey|api_key|code|credential|credentials)$/i;
 
@@ -8,7 +8,7 @@ function variesPrivate(response){
   const vary=(response.headers.get('vary')||'').toLowerCase();
   return vary.split(',').some(value=>{
     const key=value.trim();
-    return key==='cookie'||key==='authorization';
+    return key==='*'||key==='cookie'||key==='authorization';
   });
 }
 
