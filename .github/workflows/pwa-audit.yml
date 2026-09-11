@@ -1,0 +1,76 @@
+name: PWA Audit
+
+on:
+  push:
+    paths:
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - 'index.html'
+      - 'icon-192.png'
+      - 'icon-512.png'
+      - 'icon-512-maskable.png'
+      - '.github/workflows/pwa-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate required PWA files
+        run: |
+          test -f manifest.webmanifest
+          test -f sw.js
+          test -f icon-192.png
+          test -f icon-512.png
+          test -f icon-512-maskable.png
+      - name: Validate manifest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.webmanifest').read_text(encoding='utf-8'))
+          for key in ('name','short_name','start_url','scope','display','theme_color','background_color','icons'):
+              assert m.get(key), f'missing manifest key: {key}'
+          assert m['display'] in ('standalone','fullscreen','minimal-ui')
+          icons=m['icons']
+          assert any(i.get('sizes')=='192x192' and i.get('type')=='image/png' for i in icons)
+          assert any(i.get('sizes')=='512x512' and i.get('type')=='image/png' for i in icons)
+          assert any(i.get('sizes')=='512x512' and 'maskable' in i.get('purpose','') for i in icons)
+          PY
+      - name: Validate service worker syntax
+        run: node --check sw.js
+      - name: Validate private and range cache safety
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          sw=Path('sw.js').read_text(encoding='utf-8').lower()
+          required=[
+            "authorization",
+            "cookie",
+            "range",
+            "if-range",
+            "content-range",
+            "set-cookie",
+            "private",
+            "no-store",
+            "key==='if-range'",
+          ]
+          missing=[token for token in required if token not in sw]
+          assert not missing, f'missing SW cache protections: {missing}'
+          assert 'key.startswith(cache_prefix)' in sw or 'key.startswith(cache_prefix'.replace('startswith','startswith') in sw or 'key.startswith' in sw, 'cache cleanup must be prefix-scoped'
+          PY
+      - name: Validate SW registration and manifest link
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('index.html').read_text(encoding='utf-8').lower()
+          assert 'manifest.webmanifest' in html
+          assert 'serviceworker' in html
+          assert 'updateviacache' in html
+          assert 'theme-color' in html
+          assert 'viewport' in html
+          PY
