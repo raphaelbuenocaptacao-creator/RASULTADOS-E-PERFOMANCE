@@ -1,0 +1,57 @@
+name: Apply PWA If-Range cache fix v2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/pwa-fix-if-range-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch service worker safely
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('sw.js')
+          s=p.read_text(encoding='utf-8')
+          old="key==='*'||key==='cookie'||key==='authorization'||key==='range';"
+          new="key==='*'||key==='cookie'||key==='authorization'||key==='range'||key==='if-range';"
+          if old not in s:
+              if new in s:
+                  raise SystemExit(0)
+              raise SystemExit('Expected Vary policy not found; refusing broad edit')
+          s=s.replace(old,new,1)
+          s=s.replace('v15-private-vary-range-safe-shell','v16-private-vary-if-range-safe-shell',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify patch
+        run: |
+          node --check sw.js
+          python - <<'PY'
+          from pathlib import Path
+          sw=Path('sw.js').read_text(encoding='utf-8')
+          assert "key==='if-range'" in sw
+          assert 'v16-private-vary-if-range-safe-shell' in sw
+          assert "request.headers.has('if-range')" in sw
+          assert "response.headers.has('content-range')" in sw
+          assert "response.headers.has('set-cookie')" in sw
+          PY
+      - name: Commit fix
+        run: |
+          if git diff --quiet -- sw.js; then
+            echo 'No SW change required'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sw.js
+          git commit -m 'fix(pwa): reject If-Range vary responses from cache'
+          git pull --rebase origin main
+          git push origin HEAD:main
