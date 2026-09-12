@@ -1,4 +1,5 @@
 name: PWA Audit
+# Workflow changes intentionally re-run the audit against the current main HEAD.
 
 on:
   push:
