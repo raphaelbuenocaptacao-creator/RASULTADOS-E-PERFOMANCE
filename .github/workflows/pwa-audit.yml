@@ -74,3 +74,18 @@ jobs:
           assert 'theme-color' in html
           assert 'viewport' in html
           PY
+      - name: Validate service worker version alignment
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          sw=Path('sw.js').read_text(encoding='utf-8')
+          html=Path('index.html').read_text(encoding='utf-8')
+          cache_match=re.search(r"CACHE=`\$\{CACHE_PREFIX\}v(\d+)-", sw)
+          register_match=re.search(r"serviceWorker\.register\(['\"]sw\.js\?v=(\d+)-", html)
+          assert cache_match, 'could not determine SW cache version'
+          assert register_match, 'could not determine registered SW version'
+          assert cache_match.group(1)==register_match.group(1), (
+              f"service worker version mismatch: cache v{cache_match.group(1)} vs register v{register_match.group(1)}"
+          )
+          PY
