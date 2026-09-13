@@ -82,7 +82,7 @@ jobs:
           from pathlib import Path
           sw=Path('sw.js').read_text(encoding='utf-8')
           html=Path('index.html').read_text(encoding='utf-8')
-          cache_match=re.search(r"CACHE=`\$\{CACHE_PREFIX\}(v[^`]+)`", sw)
+          cache_match=re.search(r"CACHE=`\$\{CACHE_PREFIX\}([^`]+)`", sw)
           register_match=re.search(r"serviceWorker\.register\(['\"]sw\.js\?v=([^'\"]+)", html)
           assert cache_match, 'could not determine SW cache version token'
           assert register_match, 'could not determine registered SW version token'
