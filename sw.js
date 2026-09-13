@@ -1,5 +1,5 @@
 const CACHE_PREFIX='vt-hub-trimestral-';
-const CACHE=`${CACHE_PREFIX}v16-private-vary-if-range-safe-shell`;
+const CACHE=`${CACHE_PREFIX}16-private-vary-if-range-safe-shell`;
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png'];
 const APP_SHELL_PATHS=new Set(APP_SHELL.map(path=>new URL(path,self.registration.scope).pathname));
 const SENSITIVE_QUERY_RE=/^(token|access_token|refresh_token|password|passwd|secret|session|auth|authorization|key|apikey|api_key|code|credential|credentials)$/i;
