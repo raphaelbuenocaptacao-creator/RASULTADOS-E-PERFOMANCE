@@ -62,7 +62,7 @@ jobs:
           ]
           missing=[token for token in required if token not in sw]
           assert not missing, f'missing SW cache protections: {missing}'
-          assert 'key.startswith(cache_prefix)' in sw or 'key.startswith(cache_prefix'.replace('startswith','startswith') in sw or 'key.startswith' in sw, 'cache cleanup must be prefix-scoped'
+          assert 'key.startswith' in sw, 'cache cleanup must be prefix-scoped'
           PY
       - name: Validate SW registration and manifest link
         run: |
@@ -75,18 +75,18 @@ jobs:
           assert 'theme-color' in html
           assert 'viewport' in html
           PY
-      - name: Validate service worker version alignment
+      - name: Validate exact service worker version alignment
         run: |
           python - <<'PY'
           import re
           from pathlib import Path
           sw=Path('sw.js').read_text(encoding='utf-8')
           html=Path('index.html').read_text(encoding='utf-8')
-          cache_match=re.search(r"CACHE=`\$\{CACHE_PREFIX\}v(\d+)-", sw)
-          register_match=re.search(r"serviceWorker\.register\(['\"]sw\.js\?v=(\d+)-", html)
-          assert cache_match, 'could not determine SW cache version'
-          assert register_match, 'could not determine registered SW version'
+          cache_match=re.search(r"CACHE=`\$\{CACHE_PREFIX\}(v[^`]+)`", sw)
+          register_match=re.search(r"serviceWorker\.register\(['\"]sw\.js\?v=([^'\"]+)", html)
+          assert cache_match, 'could not determine SW cache version token'
+          assert register_match, 'could not determine registered SW version token'
           assert cache_match.group(1)==register_match.group(1), (
-              f"service worker version mismatch: cache v{cache_match.group(1)} vs register v{register_match.group(1)}"
+              f"service worker version mismatch: cache {cache_match.group(1)} vs register {register_match.group(1)}"
           )
           PY
